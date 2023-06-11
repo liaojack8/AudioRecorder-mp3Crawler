@@ -7,11 +7,11 @@ from urllib import request
 from http import cookiejar
 from tqdm import tqdm
 fileName = 'OUT'
-deviceIPAddr = '192.168.0.230:80' #address:port
 cookieJar = cookiejar.CookieJar()
 cookieList = []
 debug = False
 indexId = 1
+ipAddr = '192.168.0.6'
 
 def getAuthorization():
 	print('正在取得授權...')
@@ -19,16 +19,16 @@ def getAuthorization():
 	cookieJar = cookiejar.CookieJar()
 	handler=request.HTTPCookieProcessor(cookieJar)
 	opener = request.build_opener(handler)
-	response = opener.open('http://'+deviceIPAddr+'/authorize?username=admin&password=admin')
+	response = opener.open('http://'+ipAddr+'/authorize?username=admin&password=admin')
 	cookieList = requests.utils.dict_from_cookiejar(cookieJar)
 	if debug:
 		print(cookieList)
 	print('[sysInfo]Get Authorization Code Success! Authorization: ', cookieList['Authorization'])
 
 def getDetailById():
-	print('正在取得檔案詳細資訊...')
+	print('正在檔案詳細資訊...')
 	global cookieJar, fileName
-	link = 'http://'+deviceIPAddr+'/playback.lgi?id=' + str(indexId)
+	link = 'http://'+ipAddr+'/playback.lgi?id=' + str(indexId)
 	req = requests.post(link,cookies=cookieJar)
 	soup = BeautifulSoup(req.content, 'html.parser')
 	a_tags = soup.find_all('a',attrs={'href':re.compile('OUT*|IN*')})
@@ -39,9 +39,9 @@ def downloadMp3File():
 	global cookieList, fileName
 	path = './' + fileName.replace('.wav','.mp3')
 	if fileName[0:3] == 'OUT':
-		link = 'http://'+deviceIPAddr+'/service/decode/mp3/' + fileName.replace('.wav','.mp3') + '?__a=' + cookieList['Authorization'] + '&q=/record/' + fileName[4:8] + '/' + fileName[8:10] + '/' + fileName[10:12] + '/' + fileName
+		link = 'http://'+ipAddr+'/service/decode/mp3/' + fileName.replace('.wav','.mp3') + '?__a=' + cookieList['Authorization'] + '&q=/record/' + fileName[4:8] + '/' + fileName[8:10] + '/' + fileName[10:12] + '/' + fileName
 	elif fileName[0:2] == 'IN':
-		link = 'http://'+deviceIPAddr+'/service/decode/mp3/' + fileName.replace('.wav','.mp3') + '?__a=' + cookieList['Authorization'] + '&q=/record/' + fileName[3:7] + '/' + fileName[7:9] + '/' + fileName[9:11] + '/' + fileName
+		link = 'http://'+ipAddr+'/service/decode/mp3/' + fileName.replace('.wav','.mp3') + '?__a=' + cookieList['Authorization'] + '&q=/record/' + fileName[3:7] + '/' + fileName[7:9] + '/' + fileName[9:11] + '/' + fileName
 	print('[sysInfo]Download Link: ',link)
 	urllib.request.urlretrieve(link,path)
 	r = requests.get(link, stream=True)
